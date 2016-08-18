@@ -63,16 +63,16 @@
         <!-- Use a type 51 custom action to send options to deferred custom action `RustupInstall`
              (can use arbitrary value that encodes all necessary properties and will be parsed from Rust) -->
         <CustomAction Id="SetInstallOptions" Property="RustupInstall" Value="... we can pass arbitrary options here ..." />
-        <CustomAction Id="RustupSetInstallLocation" BinaryKey="RustupCustomActionDll" DllEntry="RustupSetInstallLocation" Execute="immediate" Return="check" Impersonate="yes"/>
+        <CustomAction Id="RustupPrepare" BinaryKey="RustupCustomActionDll" DllEntry="RustupPrepare" Execute="immediate" Return="check" Impersonate="yes"/>
         <!-- Propagate the value of `RustupInstallLocation` (set by custom action) to `INSTALLLOCATION` -->
         <CustomAction Id="AssignInstallLocation" Directory="INSTALLLOCATION" Value="[RustupInstallLocation]"/>
         <CustomAction Id="RustupInstall" BinaryKey="RustupCustomActionDll" DllEntry="RustupInstall" Execute="deferred" Return="check" Impersonate="yes"/>
         <CustomAction Id="RustupUninstall" BinaryKey="RustupCustomActionDll" DllEntry="RustupUninstall" Execute="deferred" Return="check" Impersonate="yes"/>
         
         <InstallExecuteSequence>
-            <DisableRollback Before="InstallInitialize"/>
-            <Custom Action="RustupSetInstallLocation" After="CostFinalize"/>
-            <Custom Action="AssignInstallLocation" After="RustupSetInstallLocation"/>
+            <!-- TODO: Add rollback CAs (at least for RustupInstall), see https://msdn.microsoft.com/en-us/library/windows/desktop/aa371369(v=vs.85).aspx -->
+            <Custom Action="RustupPrepare" After="CostFinalize"/>
+            <Custom Action="AssignInstallLocation" After="RustupPrepare"/>
             <Custom Action="SetInstallOptions" Before="InstallInitialize">NOT Installed</Custom>
             <Custom Action="RustupInstall" After="InstallFiles">NOT Installed</Custom>
             <!-- Run RustupUninstall only on true uninstall, not on upgrade -->
